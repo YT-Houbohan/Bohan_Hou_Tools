@@ -1,3 +1,36 @@
+# 请注意：此文件为Bohan_Hou的工具箱，仅供授权的安全测试和学习使用。
+# 请勿使用此文件进行任何非法活动。
+# 如需使用，请联系作者获得授权。
+# 联系方式： QQ:3225215070
+#            Email: hou.bohan@qq.com
+#            Github: https://github.com/YT-Houbohan
+# 警告：此工具仅供授权的安全测试和学习使用。
+# 使用此工具造成的一切后果，与作者无关。
+# 作者不承担因使用此工具而造成的任何法律责任。
+# 使用本工具即表示您同意遵守相关法律法规。
+# 作者对使用此工具造成的任何法律责任不承担责任。
+# 请勿将此文件用于任何商业用途。
+
+
+
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+
 import hashlib
 import sys
 import os
@@ -7,6 +40,7 @@ import random
 from datetime import datetime
 import requests
 import re
+import psutil 
 
 # 最大密码尝试次数
 MAX_ATTEMPTS = 3
@@ -16,18 +50,34 @@ def show_legal_notice():
     print("作者：Bohan_Hou")
     print("许可证：Apache License 2.0")
     print("版权所有：Bohan_Hou")
+    print("项目地址: https://github.com/YT-Houbohan/Bohan_Hou_Tools")
     print("联系方式：  QQ:3225215070" \
     "\n            Email: hou.bohan@qq.com" \
     "\n            Github: https://github.com/YT-Houbohan")
-    print("警告：此工具仅供授权的安全测试和学习使用。")
-    print("未经授权使用此工具对目标系统进行攻击可能违反法律。")
-    print("使用本工具即表示您同意遵守相关法律法规。")
+    print("警告：此工具仅供授权的安全测试和学习使用。\033[31m\n使用此工具造成的一切后果，与作者无关。\033[0m")
+    print("未经授权使用此工具对目标系统进行攻击可能违反法律。\033[31m\n作者不承担因使用此工具而造成的任何法律责任。\033[0m")
+    print("使用本工具即表示您同意遵守相关法律法规。\033[31m\n作者对使用此工具造成的任何法律责任不承担责任。\033[0m")
     input("按Enter键继续...")
 
 # 对密码进行哈希加密
 def hash_password(password):
     hash_object = hashlib.sha256(password.encode())
     return hash_object.hexdigest()
+
+# 禁用程序自身
+def disable_self():
+    with open(__file__, 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+    
+    # 在文件开头添加禁用代码
+    disabled_code = [
+        "# DISABLED BY SECURITY SYSTEM\n",
+        "print('程序已被禁用，请联系管理员！\033[31m\n请勿使用此程序！\033[0m')\n",
+        "import sys; sys.exit(1)\n"
+    ]
+    
+    with open(__file__, 'w', encoding='utf-8') as f:
+        f.writelines(disabled_code + lines)
 
 # 验证密码
 show_legal_notice()
@@ -40,18 +90,12 @@ def verify_password():
         if input_hashed == hashed_password:
             return True
         else:
-            print("密码不对,请重新输入(最多3次)")
+            print("\033[31m\n密码不对,请重新输入(最多3次)\033[0m")
             attempts += 1
-    print("尝试次数过多，程序销毁!")
-    try:
-        # 获取当前脚本的文件路径
-        current_script = os.path.abspath(sys.argv[0])
-        # 删除当前脚本文件
-        os.remove(current_script)
-    except Exception as e:
-        print(f"删除文件时出错: {e}")
-    # 确保程序停止运行
-    sys.exit()
+    if attempts >= MAX_ATTEMPTS:
+        disable_self()
+        print("\033[31m程序已被禁用！\033[31m\n请勿使用此程序！\033[0m")
+        sys.exit(1)
 
 # 显示进度条
 def show_progress(percentage):
@@ -345,6 +389,20 @@ def web_vulnerability_scanner():
     check_xss(url)
     check_sqli(url)
 
+# 获取本机所有网络接口信息
+def get_local_network_info():
+    interfaces = psutil.net_if_addrs()
+    for interface, addrs in interfaces.items():
+        print(f"接口名称: {interface}")
+        for addr in addrs:
+            if addr.family == socket.AF_INET:
+                print(f"  IPv4 地址: {addr.address}")
+                print(f"  子网掩码: {addr.netmask}")
+            elif addr.family == socket.AF_INET6:
+                print(f"  IPv6 地址: {addr.address}")
+            elif addr.family == psutil.AF_LINK:
+                print(f"  MAC 地址: {addr.address}")
+        print()
 
 
 # 显示菜单
@@ -354,7 +412,8 @@ def show_menu():
         "1": ("DDoS攻击脚本", ddos_attack),
         "2": ("简单的 Web 漏洞扫描器", web_vulnerability_scanner),
         "3": ("端口扫描器", port_scanner),
-        "4": ("手机号轰炸", Mobile_phone_number_SMS_bombing)
+        "4": ("手机号轰炸", Mobile_phone_number_SMS_bombing),
+        "5": ("获取本机网络接口信息", get_local_network_info)
     }
     print("--------------------------")
     print("欢迎使用BohanHou的工具箱,请选择:")
